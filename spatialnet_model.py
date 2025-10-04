@@ -58,7 +58,7 @@ class SpatialBlock(nn.Module):
     
     # def forward(self, x):
     #     '''
-    #     The inputs are of shape (batch_size, input_dim)
+    #     The inputs are of shape (batch_size, input_dim)    
    
     #     We need to compute the similarity between each input and each neuron position.
     #     '''
