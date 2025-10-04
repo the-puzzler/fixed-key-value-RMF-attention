@@ -36,7 +36,7 @@ pip install -e .
 The project uses PyTorch, NumPy, Matplotlib, and tqdm (see `pyproject.toml`). GPU is optional but cuts runtime for the image field experiment.
 
 ## Reproducing the Experiments
-- RMF SpatialNet: `python -m simple_img.simple_img`
+- RMF SpatialNet: `python -m simple_img.simple_img` (un comment to change to dot prod mode from gaussian dist mode)
 - MLP baseline: `python -m simple_img.mlp_for_comparison`
 - Dot-product SpatialNet: switch `SpatialBlock.forward` to use the provided `dot_product_weights` implementation before running the RMF script. This keeps the rest of the pipeline and parameter counts identical.
 
