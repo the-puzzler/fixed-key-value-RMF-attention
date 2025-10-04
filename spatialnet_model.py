@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+import math
 
 
 class SpatialBlock(nn.Module):
@@ -24,6 +24,8 @@ class SpatialBlock(nn.Module):
         directions = vecs / (vecs.norm(dim=1, keepdim=True) + 1e-8)
         radii = torch.rand(num_neurons, 1) ** (1.0 / input_dim)
         self.positions = nn.Parameter(directions * radii)
+        # self.positions = nn.Parameter(torch.empty(num_neurons, input_dim))
+        # nn.init.xavier_uniform_(self.positions)   
 
         self.weights = nn.Parameter(torch.randn(num_neurons, output_dim))
         self.log_sigma = nn.Parameter(torch.full((num_neurons,), 0.1))
@@ -36,7 +38,7 @@ class SpatialBlock(nn.Module):
         dists = torch.cdist(x, self.positions)  # (batch_size, num_neurons)
         sigma = F.softplus(self.log_sigma) + 1e-6  # keep σ > 0
         return torch.exp(-dists**2 / (2 * sigma**2))
-
+    
     def forward(self, x):
         '''
         The inputs are of shape (batch_size, input_dim)
@@ -48,6 +50,24 @@ class SpatialBlock(nn.Module):
         #gweights = gweights / self.num_neurons
         output = gweights @ self.weights  # (batch_size, output_dim)
         return output
+
+    
+    # def dot_product_weights(self, x):
+    #     logits = (x @ self.positions.T) * (1.0 / math.sqrt(x.size(1)))
+    #     return torch.softmax(logits, dim=1)
+    
+    # def forward(self, x):
+    #     '''
+    #     The inputs are of shape (batch_size, input_dim)
+   
+    #     We need to compute the similarity between each input and each neuron position.
+    #     '''
+     
+    #     # similarity computation
+    #     weights = self.dot_product_weights(x)  # (batch_size, num_neurons)
+    #     output = weights @ self.weights  # (batch_size, output_dim)
+    #     return output
+
 
     
 class SpatialNet(nn.Module):

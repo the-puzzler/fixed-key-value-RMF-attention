@@ -34,7 +34,7 @@ coords, colors, image_shape = load_image_field(path)
 height, width = image_shape
 
 dataset = ImageField(coords, colors)
-loader = DataLoader(dataset, batch_size=32, shuffle=True)
+loader = DataLoader(dataset, batch_size=64, shuffle=True)
 
 model = SpatialNet([20,20,20], [10,10], 2, 3)
 
