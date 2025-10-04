@@ -36,7 +36,7 @@ height, width = image_shape
 dataset = ImageField(coords, colors)
 loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
-model = SpatialNet([20,20,20], [20,20], 2, 3)
+model = SpatialNet([20,20,20], [10,10], 2, 3)
 
 
 # %%
@@ -53,7 +53,7 @@ coords_device = coords.to(device)
 colors_image = colors.view(height, width, 3)
 
 num_epochs = 4
-snapshot_every = 5_000
+snapshot_every = 2500
 snapshot_dir = os.path.join("outputs", "snapshots")
 loss_history = []
 step = 0
@@ -97,8 +97,3 @@ for epoch in range(num_epochs):
                     step=step,
                 )
 
-# %%
-%matplotlib notebook
-#%%
-
-launch_interactive_inspector(model, coords, (height, width))
