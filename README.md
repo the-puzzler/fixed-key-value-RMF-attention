@@ -1,4 +1,4 @@
-# Spatial Net: Continuous Attention with Radial Metric Fields
+# Spatial Net: Continuous Vector Attention with Radial Metric Fields
 
 A small research playground for modelling 2D neural fields with attention-style interactions between neurons that live in continuous space. The project compares three approaches that all share the same parameter budget and training recipe:
 
@@ -6,10 +6,19 @@ A small research playground for modelling 2D neural fields with attention-style 
 - A dot-product attention variant that anchors queries/values to static neuron locations.
 - A vanilla MLP baseline.
 
+## Neural Field
+I have used a neural field (sometimes called compositional pattern producing network) type objective. Here the models are trained recieving x,y coordinates and must output 3 channel values. This is very powerful, because unlike other objectives it means we can very easily observe the entire input-output space of the model in one go (the image reconstruction).
+
+## How I like to frame it: 
+When I began this project, I was not thinking about attention at all but rather wether it would be possible to attribute neurons to certain parts of the input space. Imagining the 2D, single-layer, case builds intuition. Consider the 2D image we are attempting to reconstruct. The input space consists of x,y coordinates. Thus in our single layer network, our neurons learn to sit somewhere on this x,y grid. Each neuron holds a belief about what the output colour of the pixel should be. Each neuron also projects an influence field. This influence field is gaussian in nature and parameterised (tigher or broader). This means each neuron has an influence on every x,y input but diminishingly as the input increases in distance. For any given input, we can calculate the output as the softmax influence weighted average of the neuron beliefs.
+![](explanation.png)
+
+Now to expand to multilayered, its quite simple. Neuron beliefs can take any number of dimensions. Thus the first layer neurons must 'sit' in a 2D input space, but their beliefs can be N dimensional. The following layer of neurons would just occupy this N dimensional space and so on and so forth.
+
 ## Key Things I Learned
-- Attention on continuous vectors still needs anchors: queries and values have to be tied to explicit neuron positions, otherwise the model has no spatial reference frame.
+- Attention on continuous vectors needs anchors: queries and values have to be tied given we don't have tokens as the input is a single continuous vector.
 - Replacing dot-product similarity with the RMF distance metric gave noticeably better reconstructions. The learnable `sigma` term encourages locality, so neurons only compete with nearby neighbours instead of the entire grid.
-- Parameter and compute parity matters. Holding these constant across models made the qualitative differences in the reconstructions much easier to attribute to the attention mechanism itself.
+- How neuron queries/positions were intialised could have a big impact.
 
 ## Repository Tour
 - `spatialnet_model.py` – Implements `SpatialBlock` and `SpatialNet`, including the RMF attention and an optional dot-product variant.
@@ -36,9 +45,7 @@ All scripts write progress snapshots to `simple_img/outputs/`. The default sched
 ## Results
 ![Target vs. RMF vs. MLP vs. Dot-Product](comparison.png)
 
-Going left-to-right: (1) the target image, (2) RMF attention with fixed query/value anchors, (3) the MLP baseline, and (4) dot-product attention with the same anchors. The RMF version stays sharper around edges and colour transitions, strongly suggesting that the learnable locality enforced by `sigma` helps the network specialise neurons to regions of the image.
+Going left-to-right and top-then-bottom: (1) the target image, (2) RMF attention with fixed query/value anchors, (3) dot-product attention with the same anchors, and (4) the MLP baseline. The RMF version stays sharper around edges and colour transitions, suggesting that the learnable locality enforced by `sigma` helps the network specialise neurons to regions of the image.
 
 ## Next Questions I Want to Explore
-- Learn the anchor positions jointly with the bandwidths instead of fixing them per layer.
 - Push beyond 2D fields (e.g., 3D occupancy or video) to see whether RMF still outperforms dot-product similarity.
-- Add quantitative metrics (PSNR/SSIM) alongside the qualitative snapshots to track improvements.
